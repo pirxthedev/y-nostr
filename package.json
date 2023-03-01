@@ -1,0 +1,28 @@
+{
+  "name": "y-nostr",
+  "version": "0.1.0",
+  "description": "Nostr provider for yjs",
+  "type": "module",
+  "main": "y-nostr.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pirxthedev/y-nostr.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pirxthedev/y-nostr/issues"
+  },
+  "homepage": "https://github.com/pirxthedev/y-nostr#readme",
+  "devDependencies": {
+    "@babel/preset-env": "^7.20.2",
+    "jest": "^29.4.3"
+  },
+  "dependencies": {
+    "lib0": "^0.2.63"
+  }
+}
