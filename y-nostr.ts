@@ -7,19 +7,21 @@ export class NostrProvider extends Observable<any> {
     relayUrl: string
     roomName: string
     doc: Y.Doc
-    relay: any
+    relay: Relay
 
     constructor(relayUrl: string, roomName: string, doc: Y.Doc) {
         super()
         this.relayUrl = relayUrl
         this.roomName = roomName
         this.doc = doc
-        this.relay = null
+        this.relay = relayInit(this.relayUrl)
 
     }
 
     connect() {
         this.emit('status', [{status: 'connecting'}])
-        this.relay = relayInit(this.relayUrl)
+        this.relay.connect().catch((err: any) => {
+            this.emit('status', [{status: 'relay-unreachable'}])
+        })
     }
 }

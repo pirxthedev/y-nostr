@@ -1,15 +1,14 @@
 import { NostrProvider } from './y-nostr'
 import { Observable } from 'lib0/observable'
-import { map } from 'lib0/map'
 import * as Y from 'yjs'
-import type { Relay } from 'nostr-tools'
+require('websocket-polyfill')
 
 let doc: Y.Doc;
 let provider: NostrProvider;
 
 beforeEach(() => {
     doc = new Y.Doc()
-    provider = new NostrProvider('wss://127.0.0.1:8008/', 'test-room', doc)
+    provider = new NostrProvider('wss://127.0.0.1:1337/', 'test-room', doc)
 })
 
 test('provider object is an Observable', () => {
@@ -17,20 +16,24 @@ test('provider object is an Observable', () => {
 });
 
 test('can initialize provider with required configuration info', () => {
-    expect(provider.relayUrl).toBe('wss://127.0.0.1:8008/')
+    expect(provider.relayUrl).toBe('wss://127.0.0.1:1337/')
     expect(provider.roomName).toBe('test-room')
     expect(provider.doc).toBe(doc)
 });
 
 test('can initiate connection to relay', done => {
-    provider.on('status', (event: any) => {
+    provider.once('status', (event: any) => {
         expect(event.status).toBe('connecting')
         done()
     })
     provider.connect()
 })
 
-test('nostr relay object created on connect', () => {
+test('connect command with unavailable relay causes error', done => {
+    provider.on('status', (event: any) => {
+        if (event.status == 'relay-unreachable') {
+            done()
+        }
+    })
     provider.connect()
-    expect(provider.relay).toBeTruthy()
 })
