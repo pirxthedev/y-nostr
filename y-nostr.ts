@@ -20,7 +20,9 @@ export class NostrProvider extends Observable<any> {
 
     connect() {
         this.emit('status', [{status: 'connecting'}])
-        this.relay.connect().catch((err: any) => {
+        this.relay.connect().then(() => {
+            this.emit('status', [{status: 'connected'}])
+        }).catch((err: any) => {
             this.emit('status', [{status: 'relay-unreachable'}])
         })
     }

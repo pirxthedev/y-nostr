@@ -37,3 +37,13 @@ test('connect command with unavailable relay causes error', done => {
     })
     provider.connect()
 })
+
+test('connect command with available relay causes success', done => {
+    provider.on('status', (event: any) => {
+        if (event.status == 'connected') {
+            done()
+        }
+    })
+    provider.relay.connect = jest.fn(() => Promise.resolve())
+    provider.connect()
+})
