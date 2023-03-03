@@ -19,20 +19,7 @@ export class NostrProvider extends Observable<any> {
         this.relay = relayInit(this.relayUrl)
 
         this.doc.on('update', (update: any) => {
-            let sk = generatePrivateKey()
-            let pk = getPublicKey(sk)
-            let unsignedEvent: UnsignedEvent = {
-                kind: 1,
-                content: fromUint8Array(update),
-                tags: [['r', this.roomName]],
-                created_at: Math.floor(Date.now() / 1000),
-                pubkey: pk,
-            }
-            let event: Event = {
-                ...unsignedEvent,
-                id: getEventHash(unsignedEvent),
-                sig: signEvent(unsignedEvent, sk)
-            }
+            let event = generateNostrEvent(update, this.roomName)
             this.relay.publish(event)
         })
 
@@ -46,4 +33,22 @@ export class NostrProvider extends Observable<any> {
             this.emit('status', [{status: 'relay-unreachable'}])
         })
     }
+}
+
+export function generateNostrEvent(message: Uint8Array, roomName: string): Event {
+    let sk = generatePrivateKey()
+    let pk = getPublicKey(sk)
+    let unsignedEvent: UnsignedEvent = {
+        kind: 1,
+        content: fromUint8Array(message),
+        tags: [['r', roomName]],
+        created_at: Math.floor(Date.now() / 1000),
+        pubkey: pk,
+    }
+    let event: Event = {
+        ...unsignedEvent,
+        id: getEventHash(unsignedEvent),
+        sig: signEvent(unsignedEvent, sk)
+    }
+    return event
 }
