@@ -81,3 +81,17 @@ describe('publish update event to nostr if doc is updated by the provider', () =
         )
     })
 })
+
+test('subscribe to updates for room name after relay is connected', async () => {
+    const connectMock = jest.fn(() => Promise.resolve())
+    provider.relay.connect = connectMock
+
+    const subMock = jest.fn()
+    provider.relay.sub = subMock
+
+    await provider.connect()
+
+    expect(subMock.mock.calls[0][0][0]).toHaveProperty(
+        '#r', ['test-room']
+    )
+})

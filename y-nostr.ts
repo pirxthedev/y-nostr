@@ -5,6 +5,8 @@ import type { Relay, UnsignedEvent, Event } from 'nostr-tools'
 import { generatePrivateKey, getPublicKey, signEvent } from 'nostr-tools'
 import { fromUint8Array } from 'js-base64'
 
+const eventKind = 1
+
 export class NostrProvider extends Observable<any> {
     relayUrl: string
     roomName: string
@@ -29,6 +31,7 @@ export class NostrProvider extends Observable<any> {
         this.emit('status', [{status: 'connecting'}])
         this.relay.connect().then(() => {
             this.emit('status', [{status: 'connected'}])
+            let sub = this.relay.sub([{kinds: [eventKind], '#r': [this.roomName]}])
         }).catch((err: any) => {
             this.emit('status', [{status: 'relay-unreachable'}])
         })
@@ -39,7 +42,7 @@ export function generateNostrEvent(message: Uint8Array, roomName: string): Event
     let sk = generatePrivateKey()
     let pk = getPublicKey(sk)
     let unsignedEvent: UnsignedEvent = {
-        kind: 1,
+        kind: eventKind,
         content: fromUint8Array(message),
         tags: [['r', roomName]],
         created_at: Math.floor(Date.now() / 1000),
