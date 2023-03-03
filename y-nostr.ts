@@ -3,7 +3,7 @@ import { getEventHash, relayInit } from 'nostr-tools'
 import * as Y from 'yjs'
 import type { Relay, UnsignedEvent, Event } from 'nostr-tools'
 import { generatePrivateKey, getPublicKey, signEvent } from 'nostr-tools'
-import { fromUint8Array } from 'js-base64'
+import { fromUint8Array, toUint8Array } from 'js-base64'
 
 const eventKind = 1
 
@@ -12,6 +12,7 @@ export class NostrProvider extends Observable<any> {
     roomName: string
     doc: Y.Doc
     relay: Relay
+    sub: any
 
     constructor(relayUrl: string, roomName: string, doc: Y.Doc) {
         super()
@@ -19,6 +20,7 @@ export class NostrProvider extends Observable<any> {
         this.roomName = roomName
         this.doc = doc
         this.relay = relayInit(this.relayUrl)
+        this.sub = null
 
         this.doc.on('update', (update: any) => {
             let event = generateNostrEvent(update, this.roomName)
@@ -31,7 +33,11 @@ export class NostrProvider extends Observable<any> {
         this.emit('status', [{status: 'connecting'}])
         this.relay.connect().then(() => {
             this.emit('status', [{status: 'connected'}])
-            let sub = this.relay.sub([{kinds: [eventKind], '#r': [this.roomName]}])
+            this.sub = this.relay.sub([{kinds: [eventKind], '#r': [this.roomName]}])
+            this.sub.on('event', (event: any) => {
+                let update = toUint8Array(event.content)
+                Y.applyUpdate(this.doc, update, this)
+            })
         }).catch((err: any) => {
             this.emit('status', [{status: 'relay-unreachable'}])
         })
