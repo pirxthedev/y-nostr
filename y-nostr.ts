@@ -24,7 +24,7 @@ export class NostrProvider extends Observable<any> {
             let unsignedEvent: UnsignedEvent = {
                 kind: 1,
                 content: fromUint8Array(update),
-                tags: [],
+                tags: [['r', this.roomName]],
                 created_at: Math.floor(Date.now() / 1000),
                 pubkey: pk,
             }

@@ -49,25 +49,35 @@ test('connect command with available relay causes success', done => {
     provider.connect()
 })
 
-test('publish update event to nostr if doc is updated by the provider', () => {
-    const publishMock = jest.fn()
-    provider.relay.publish = publishMock
-    doc.transact(() => {
-        doc.getText('test-room').insert(0, 'Hello')
-    })
-    expect(provider.relay.publish).toHaveBeenCalled()
-})
+describe('publish update event to nostr if doc is updated by the provider', () => {
 
-test('content field of update event has recommended yjs protocol encoding', () => {
-    const publishMock = jest.fn()
-    provider.relay.publish = publishMock
-    doc.transact(() => {
-        doc.getText('test-room').insert(0, 'Hello')
+    let publishMock: jest.Mock
+
+    beforeEach(() => {
+        publishMock = jest.fn()
+        provider.relay.publish = publishMock
+        doc.transact(() => {
+            doc.getText('test-room').insert(0, 'Hello')
+        })
     })
-    const documentState = Y.encodeStateAsUpdate(doc)
-    const base64Encoded = fromUint8Array(documentState)
-    expect(publishMock.mock.calls[0][0]).toHaveProperty(
-        'content',
-        base64Encoded
-    )
+
+    test('publish method on relay is called', () => {
+        expect(provider.relay.publish).toHaveBeenCalled()
+    })
+
+    test('content field of nostr event has recommended yjs protocol encoding', () => {
+        const documentState = Y.encodeStateAsUpdate(doc)
+        const base64Encoded = fromUint8Array(documentState)
+        expect(publishMock.mock.calls[0][0]).toHaveProperty(
+            'content',
+            base64Encoded
+        )
+    })
+
+    test('tags field of nostr event references room name', () => {
+        expect(publishMock.mock.calls[0][0]).toHaveProperty(
+            'tags',
+            [['r', 'test-room']]
+        )
+    })
 })
