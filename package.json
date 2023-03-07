@@ -3,17 +3,18 @@
   "version": "0.1.0",
   "description": "Nostr provider for yjs",
   "type": "module",
-  "main": "y-nostr.js",
+  "main": "build/y-nostr.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "tsc --build"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/pirxthedev/y-nostr.git"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Pirx",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/pirxthedev/y-nostr/issues"
   },
