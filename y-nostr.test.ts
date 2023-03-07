@@ -102,5 +102,22 @@ test('subscription message is sent to relay after connect', async () => {
     await provider.connect()
     relayMock.nextMessage.then((message: any) => {
         expect(message[0]).toBe('REQ')
+        expect(message[2]).toStrictEqual({kinds: [1], '#r': ['test-room']})
+    })
+})
+
+test('nostr update message is applied to doc', async () => {
+    await provider.connect()
+    let remoteDoc = new Y.Doc()
+    remoteDoc.transact(() => {
+        remoteDoc.getText('test-room').insert(0, 'Hello')
+    })
+    const documentState = Y.encodeStateAsUpdate(remoteDoc)
+    let event = generateNostrEvent(documentState, 'test-room')
+    relayMock.send(['EVENT', event])
+    doc.on('update', (updateMessage, origin, ydoc) => {
+        expect(origin).toBe(provider)
+        expect(updateMessage).toBe(documentState)
+        expect(ydoc.getText('test-room').toString()).toBe('Hello')
     })
 })
