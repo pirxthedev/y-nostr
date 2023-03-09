@@ -3,10 +3,31 @@
   "version": "0.1.0",
   "description": "Nostr provider for yjs",
   "type": "module",
-  "main": "build/y-nostr.js",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./lib/esm/types/y-nostr.d.ts",
+        "default": "./lib/esm/y-nostr.js"
+      },
+      "require": {
+        "types": "./lib/cjs/types/y-nostr.d.ts",
+        "default": "./lib/cjs/y-nostr.js"
+      }
+    }
+  },
+  "types": "./lib/cjs/types/y-nostr.d.ts",
+  "main": "./lib/cjs/y-nostr.js",
+  "files": [
+    "lib/**/*"
+  ],
   "scripts": {
     "test": "jest",
-    "build": "tsc --build"
+    "clean": "npm run clean:win && npm run clean:lin",
+    "clean:win": "node -e \"if (process.platform === 'win32') process.exit(1)\" || , if exist lib rmdir /Q /S lib",
+    "clean:lin": "node -e \"if (process.platform !== 'win32') process.exit(1)\" || rm -rf lib",
+    "build": "npm run clean && npm run build:cjs && npm run build:esm",
+    "build:esm": "tsc -p ./tsconfig.esm.json",
+    "build:cjs": "tsc -p ./tsconfig.json"
   },
   "repository": {
     "type": "git",
