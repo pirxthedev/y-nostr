@@ -5,8 +5,8 @@ require('websocket-polyfill')
 import { fromUint8Array } from 'js-base64'
 import WS from 'jest-websocket-mock'
 
-let doc: Y.Doc;
-let provider: NostrProvider;
+let doc;
+let provider;
 let relayMock = new WS('wss://127.0.0.1:1337/', { jsonProtocol: true })
 
 beforeEach(() => {
@@ -25,7 +25,7 @@ test('can initialize provider with required configuration info', () => {
 });
 
 test('can initiate connection to relay', done => {
-    provider.once('status', (event: any) => {
+    provider.once('status', (event) => {
         expect(event.status).toBe('connecting')
         done()
     })
@@ -34,7 +34,7 @@ test('can initiate connection to relay', done => {
 
 test('connect command with unavailable relay causes error', done => {
     provider = new NostrProvider('wss://127.0.0.1:1338/', 'test-room', doc)
-    provider.on('status', (event: any) => {
+    provider.on('status', (event) => {
         if (event.status == 'relay-unreachable') {
             done()
         }
@@ -43,7 +43,7 @@ test('connect command with unavailable relay causes error', done => {
 })
 
 test('connect command with available relay causes success', done => {
-    provider.on('status', (event: any) => {
+    provider.on('status', (event) => {
         if (event.status == 'connected') {
             done()
         }
@@ -53,7 +53,7 @@ test('connect command with available relay causes success', done => {
 
 describe('publish update event to nostr if doc is updated by the provider', () => {
 
-    let publishMock: jest.Mock
+    let publishMock
 
     beforeEach(() => {
         publishMock = jest.fn()
@@ -100,7 +100,7 @@ test('subscribe to updates for room name after relay is connected', async () => 
 
 test('subscription message is sent to relay after connect', async () => {
     await provider.connect()
-    relayMock.nextMessage.then((message: any) => {
+    relayMock.nextMessage.then((message) => {
         expect(message[0]).toBe('REQ')
         expect(message[2]).toStrictEqual({kinds: [1], '#r': ['test-room']})
     })
