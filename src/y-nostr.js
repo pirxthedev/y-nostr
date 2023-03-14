@@ -17,7 +17,7 @@ export class NostrProvider extends Observable {
         this.sub = null
 
         this._updateHandler = (update, origin) => {
-            if (origin !== this) {
+            if (origin !== this && this.relay.status === 1) {
                 let event = generateNostrEvent(update, this.roomName)
                 this.relay.publish(event)
             }
@@ -27,9 +27,9 @@ export class NostrProvider extends Observable {
 
     }
 
-    connect() {
+    async connect() {
         this.emit('status', [{status: 'connecting'}])
-        this.relay.connect().then(() => {
+        await this.relay.connect().then(() => {
             this.emit('status', [{status: 'connected'}])
             this.sub = this.relay.sub([{kinds: [eventKind], '#r': [this.roomName]}])
             this.sub.on('event', (event) => {

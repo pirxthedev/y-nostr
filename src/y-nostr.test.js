@@ -52,13 +52,19 @@ test('connect command with available relay causes success', done => {
     provider.connect()
 })
 
+test('status of relay is set to connected after connection is established', async () => {
+    await provider.connect()
+    expect(provider.relay.status).toBe(1)
+})
+
 describe('publish update event to nostr', () => {
 
     let publishMock
 
-    beforeEach(() => {
+    beforeEach(async () => {
         publishMock = jest.fn()
         provider.relay.publish = publishMock
+        await provider.connect()
         doc.transact(() => {
             doc.getText('test-room').insert(0, 'Hello')
         })
@@ -134,4 +140,38 @@ test('do not publish event to nostr if doc is updated by an incoming nostr messa
 
     // The publish method should not be called
     expect(publishMock).not.toHaveBeenCalled()
+})
+
+
+test('do not publish updates if the relay is not connected', () => {
+    // mock the publish method on the relay
+    const publishMock = jest.fn()
+    provider.relay.publish = publishMock
+
+    // Edit the document
+    doc.transact(() => {
+        doc.getText('test-room').insert(0, 'Hello')
+    })
+
+    // The publish method not have been called
+    expect(publishMock).not.toHaveBeenCalled()
+})
+
+
+test('send full ydoc state to nostr after connecting to relay', async () => {
+    // mock the publish method on the relay
+    const publishMock = jest.fn()
+    provider.relay.publish = publishMock
+
+    // Edit the document
+    doc.transact(() => {
+        doc.getText('test-room').insert(0, 'Hello')
+    })
+    const documentState = Y.encodeStateAsUpdate(doc)
+
+    // Connect to the relay
+    await provider.connect()
+
+    // The publish method should be called with a sync step 2 message
+    expect(publishMock.mock.calls[0][0]).toHaveProperty('content', fromUint8Array(documentState))
 })
