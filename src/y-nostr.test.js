@@ -5,6 +5,7 @@ require('websocket-polyfill')
 import { fromUint8Array } from 'js-base64'
 import WS from 'jest-websocket-mock'
 
+
 let doc;
 let provider;
 let relayMock = new WS('wss://127.0.0.1:1337/', { jsonProtocol: true })
@@ -51,7 +52,7 @@ test('connect command with available relay causes success', done => {
     provider.connect()
 })
 
-describe('publish update event to nostr if doc is updated by the provider', () => {
+describe('publish update event to nostr', () => {
 
     let publishMock
 
@@ -82,6 +83,7 @@ describe('publish update event to nostr if doc is updated by the provider', () =
             [['r', 'test-room']]
         )
     })
+
 })
 
 test('subscribe to updates for room name after relay is connected', async () => {
@@ -120,4 +122,16 @@ test('nostr update message is applied to doc', async () => {
         expect(updateMessage).toBe(documentState)
         expect(ydoc.getText('test-room').toString()).toBe('Hello')
     })
+})
+
+test('do not publish event to nostr if doc is updated by an incoming nostr message', () => {
+    // mock the publish method on the relay
+    const publishMock = jest.fn()
+    provider.relay.publish = publishMock
+
+    // Apply update to local doc with origin set to provider
+    doc.emit('update', ['test', provider])
+
+    // The publish method should not be called
+    expect(publishMock).not.toHaveBeenCalled()
 })

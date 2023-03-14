@@ -16,10 +16,14 @@ export class NostrProvider extends Observable {
         this.relay = relayInit(this.relayUrl)
         this.sub = null
 
-        this.doc.on('update', (update) => {
-            let event = generateNostrEvent(update, this.roomName)
-            this.relay.publish(event)
-        })
+        this._updateHandler = (update, origin) => {
+            if (origin !== this) {
+                let event = generateNostrEvent(update, this.roomName)
+                this.relay.publish(event)
+            }
+        }
+
+        this.doc.on('update', this._updateHandler)
 
     }
 
